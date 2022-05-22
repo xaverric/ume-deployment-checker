@@ -19,25 +19,25 @@ const getSubAppNodeSelectors = (pods, subApp) => {
 };
 
 const evaluateDeployment = (pods, subApp, subAppConfig) => {
-    let result = "";
+    let result = [];
     let status = getSubApp(pods, subApp)?.status?.phase;
     let found = getSubAppCount(pods, subApp);
 
     if(found === 0 || found !== subAppConfig.count || status !== "Running") {
-        result = `Status (Expected/Current): Running/${status}, Count (Expected/Current): ${subAppConfig.count}/${found}.`
+        result.push(`Status (Expected/Current): Running/${status}, Count (Expected/Current): ${subAppConfig.count}/${found}.`);
     }
-    return result;
+    return result.join(" ");
 };
 
 const evaluateNodeSelector = (pods, subApp, subAppConfig) => {
-    let result = "";
+    let result = [];
     subAppConfig.nodeSelectors?.forEach(expectedSelector => {
         let foundSelector = getSubAppNodeSelectors(pods, subApp)?.find(podSelector => expectedSelector.key === podSelector.key);
         if (!foundSelector || !deepEqual(expectedSelector, foundSelector)) {
-            result = `Node selector ${expectedSelector.key}=${expectedSelector.values[0]} missing.`;    
+            result.push(`Node selector ${expectedSelector.key}=${expectedSelector.values[0]} missing.`);
         }
     });
-    return result;
+    return result.join(" ");
 };
 
 const evaluateVersion = (pods, subApp) => {
