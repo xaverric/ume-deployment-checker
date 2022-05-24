@@ -29,7 +29,13 @@ const readContextConfiguration = cmdArgs => {
     return environmentDetails
 };
 
+const readNodeSizeConfiguration = cmdArgs => {
+    let filePath = path.resolve(`${cmdArgs.config}/nodesizes.json`);
+    return readJsonFile(filePath);
+}
+
 module.exports = {
     readEnvironmentConfiguration,
-    readContextConfiguration
+    readContextConfiguration,
+    readNodeSizeConfiguration
 }

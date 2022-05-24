@@ -38,6 +38,28 @@ const cmdArgumentsDefinition = [
     description: 'Display and verify number and status of deployed uuApps in the given environment.'
   },
   {
+    name: 'uri',
+    alias: 'u',
+    type: Boolean,
+    description: 'Display uuApp deployment URI of all uuApps deployed in the given environment.'
+  },
+  {
+    name: 'nodesize',
+    alias: 'n',
+    type: Boolean,
+    description: 'Display uuApp node size of all uuApps deployed in the given environment.'
+  },
+  {
+    name: 'memory',
+    type: Boolean,
+    description: 'Display uuApp RAM of all uuApps deployed in the given environment.'
+  },
+  {
+    name: 'cpu',
+    type: Boolean,
+    description: 'Display uuApp CPU of all uuApps deployed in the given environment.'
+  },
+  {
     name: 'table',
     alias: 't',
     type: Boolean,

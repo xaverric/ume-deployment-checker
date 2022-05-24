@@ -1,3 +1,4 @@
+const {readNodeSizeConfiguration} = require("./configuration-reader-module");
 const deepEqual = (x, y) => {
     return (x && y && typeof x === 'object' && typeof y === 'object') ? 
       (Object.keys(x).length === Object.keys(y).length) && Object.keys(x).reduce((isEqual, key) => {return isEqual && deepEqual(x[key], y[key]);}, true) :
@@ -48,11 +49,43 @@ const evaluateRts = (pods, subApp) => {
     return getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_RUNTIME_STACK_CODE;
 };
 
+const evaluateDeploymentUri = (pods, subApp) => {
+    return getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_APP_DEPLOYMENT_URI;
+};
+
+const evaluateNodeSize = (pods, subApp, subAppConfig, nodeSizes) => {
+    let result = [];
+    let subAppCpu = evaluateCpu(pods, subApp);
+    let subAppMemory = evaluateMemory(pods, subApp);
+    let foundNodeSizeKey = Object.keys(nodeSizes).find(nodeSizeName => {
+        return nodeSizes[nodeSizeName]?.cpu === subAppCpu && nodeSizes[nodeSizeName]?.memory === subAppMemory
+    });
+    let foundNodeSize = nodeSizes[foundNodeSizeKey];
+    if (foundNodeSizeKey !== subAppConfig.nodeSize) {
+        result.push(`NodeSize (Expected/Found): ${subAppConfig.nodeSize}/${foundNodeSizeKey}, CPU (Expected/Current): ${foundNodeSize?.cpu}/${subAppCpu}, RAM: ${foundNodeSize?.memory}/${subAppMemory}`)
+    } else {
+        result.push(`${foundNodeSizeKey} - OK`);
+    }
+    return result.join(" ");
+};
+
+const evaluateCpu = (pods, subApp) => {
+    return getSubApp(pods, subApp)?.spec?.containers[0]?.resources?.requests?.cpu;
+};
+
+const evaluateMemory = (pods, subApp) => {
+    return getSubApp(pods, subApp)?.spec?.containers[0]?.resources?.requests?.memory;
+};
+
 const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_DEPLOYMENT = "DEPLOYMENT";
     const EVALUATE_KEY_NODE_SELECTOR = "NODE_SELECTOR";
     const EVALUATE_KEY_VERSION = "VERSION";
     const EVALUATE_KEY_RTS = "RUNTIME_STACK";
+    const EVALUATE_KEY_DEPLOYMENT_URI = "UUAPP_DEPLOYMENT_URI";
+    const EVALUATE_KEY_NODE_SIZE = "NODE_SIZE";
+    const EVALUATE_KEY_MEMORY = "MEMORY";
+    const EVALUATE_KEY_CPU = "CPU";
 
     const result = [];
     Object.keys(environmentConfiguration).forEach(subApp => {
@@ -68,6 +101,19 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
             }
             if (cmdArgs.rts) {
                 evaluateSubApp[EVALUATE_KEY_RTS] = evaluateRts(pods, subApp);
+            }
+            if (cmdArgs.uri) {
+                evaluateSubApp[EVALUATE_KEY_DEPLOYMENT_URI] = evaluateDeploymentUri(pods, subApp);
+            }
+            if (cmdArgs.nodesize) {
+                let nodesizes = readNodeSizeConfiguration(cmdArgs);
+                evaluateSubApp[EVALUATE_KEY_NODE_SIZE] = evaluateNodeSize(pods, subApp, subAppConfig, nodesizes);
+            }
+            if (cmdArgs.cpu) {
+                evaluateSubApp[EVALUATE_KEY_CPU] = evaluateCpu(pods, subApp);
+            }
+            if (cmdArgs.memory) {
+                evaluateSubApp[EVALUATE_KEY_MEMORY] = evaluateMemory(pods, subApp);
             }
             result.push(evaluateSubApp);
         }

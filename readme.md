@@ -36,6 +36,19 @@ Display runtime stack of all uuApps deployed in the given environment.
 ### -d, --deployment           
 Display and verify number and status of deployed uuApps in the given environment.
 
+### -u, --uri                  
+Display uuApp deployment URI of all uuApps deployed in the given environment.
+
+### -n, --nodesize             
+Display uuApp node size of all uuApps deployed in the given environment.
+
+### --memory                   
+Display uuApp RAM of all uuApps deployed in the given environment.
+
+### --cpu                      
+Display uuApp CPU of all uuApps deployed in the given environment.
+
+
 ### -t, --table               
 Diplay the ouput in the table form.
 
@@ -53,7 +66,8 @@ Diplay the ouput in the table form.
         "operator": "In",
         "values": [
           "app-mpls1"
-        ]
+        ],
+        "nodeSize": "NODESIZE_NAME"  
       },
       {
         "key": "archive",
@@ -77,4 +91,15 @@ Diplay the ouput in the table form.
   },
   ...
 ]
+```
+
+### nodesizes.json
+```js
+{
+    "NODESIZE_NAME": {
+        "cpu": "1",
+        "memory": "512Mi"
+    },
+    ...
+}
 ```
