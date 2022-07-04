@@ -1,3 +1,5 @@
+const {CONSOLE_LOG, LOG} = require("./../logger/logger");
+
 const OBJECT_HEADER = "subApp";
 
 const guessKeys = array => {
@@ -8,27 +10,30 @@ const isNotEmpty = value => {
     return !!value;
 }
 
-const printMessages = (key, messages) => {
+const printMessages = (key, messages, logger) => {
     messages.forEach(message => {
-        console.log(`${message.subApp} - ${message[key]}`);
+        logger.debug(`${message.subApp} - ${message[key]}`);
     });
     if (messages.length === 0) {
-        console.log("Nothing to report...")
+        logger.debug("Nothing to report...")
     }
 }
 
+const printLineContent = (array, cmdArgs, logger) => {
+    guessKeys(array).forEach(key => {
+        logger.debug(`------- Evaluating ${key} for ${cmdArgs.environment.toUpperCase()} -------`);
+        let messages = array.filter(subApp => isNotEmpty(subApp[key]));
+        printMessages(key, messages, logger);
+    });
+}
+
 const print = (array, cmdArgs) => {
-    console.log(`------------------------------ ${cmdArgs.environment.toUpperCase()} ------------------------------`)
+    CONSOLE_LOG.debug(`------------------------------ ${cmdArgs.environment.toUpperCase()} ------------------------------`)
     if (cmdArgs.table) {
-        console.log(`------- Evaluating ${guessKeys(array)} for ${cmdArgs.environment.toUpperCase()} -------`);
+        CONSOLE_LOG.debug(`------- Evaluating ${guessKeys(array)} for ${cmdArgs.environment.toUpperCase()} -------`);
         console.table(array);
-    } else {
-        guessKeys(array).forEach(key => {
-            console.log(`------- Evaluating ${key} for ${cmdArgs.environment.toUpperCase()} -------`);
-            let messages = array.filter(subApp => isNotEmpty(subApp[key]));
-            printMessages(key, messages);
-        });
     }
+    printLineContent(array, cmdArgs, cmdArgs.table ? LOG : CONSOLE_LOG);
 }
 
 module.exports = {

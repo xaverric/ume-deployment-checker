@@ -2,6 +2,7 @@ const { readEnvironmentConfiguration } = require("./modules/configuration-reader
 const { evaluatePodMetadata } = require("./modules/evalution-module");
 const { getPodsMetadata } = require("./modules/kubectl-pod-details-module");
 const { print } = require("./modules/print-module");
+const {CONSOLE_LOG} = require("./logger/logger");
 
 const check = async cmdArgs => {
     let environmentConfiguration = readEnvironmentConfiguration(cmdArgs);
@@ -12,7 +13,7 @@ const check = async cmdArgs => {
 }
 
 const help = usage => {
-    console.log(usage);
+    CONSOLE_LOG.debug(usage);
 }
 
 module.exports = {

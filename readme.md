@@ -48,6 +48,8 @@ Display uuApp RAM of all uuApps deployed in the given environment.
 ### --cpu                      
 Display uuApp CPU of all uuApps deployed in the given environment.
 
+### --status
+Display container uuApp status.
 
 ### -t, --table               
 Diplay the ouput in the table form.
@@ -103,3 +105,6 @@ Diplay the ouput in the table form.
     ...
 }
 ```
+
+## Logs
+logs are automatically stored to the ```%HOME%/.ume-deployment-checker/logs``` folder

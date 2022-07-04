@@ -60,6 +60,11 @@ const cmdArgumentsDefinition = [
     description: 'Display uuApp CPU of all uuApps deployed in the given environment.'
   },
   {
+    name: 'status',
+    type: Boolean,
+    description: 'Display uuApp container status.'
+  },
+  {
     name: 'table',
     alias: 't',
     type: Boolean,

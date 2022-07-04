@@ -1,4 +1,5 @@
 const {readNodeSizeConfiguration} = require("./configuration-reader-module");
+
 const deepEqual = (x, y) => {
     return (x && y && typeof x === 'object' && typeof y === 'object') ? 
       (Object.keys(x).length === Object.keys(y).length) && Object.keys(x).reduce((isEqual, key) => {return isEqual && deepEqual(x[key], y[key]);}, true) :
@@ -77,6 +78,12 @@ const evaluateMemory = (pods, subApp) => {
     return getSubApp(pods, subApp)?.spec?.containers[0]?.resources?.requests?.memory;
 };
 
+const evaluateContainerStatus = (pods, subApp) => {
+    const status = getSubApp(pods, subApp)?.status;
+    const containerStatus = status?.containerStatuses[0];
+    return `${status?.phase} [${status?.startTime}] - Restarts: ${containerStatus?.restartCount}`;
+};
+
 const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_DEPLOYMENT = "DEPLOYMENT";
     const EVALUATE_KEY_NODE_SELECTOR = "NODE_SELECTOR";
@@ -86,6 +93,7 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_NODE_SIZE = "NODE_SIZE";
     const EVALUATE_KEY_MEMORY = "MEMORY";
     const EVALUATE_KEY_CPU = "CPU";
+    const EVALUATE_CONTAINER_STATUS = "CONTAINER_STATUS";
 
     const result = [];
     Object.keys(environmentConfiguration).forEach(subApp => {
@@ -114,6 +122,9 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
             }
             if (cmdArgs.memory) {
                 evaluateSubApp[EVALUATE_KEY_MEMORY] = evaluateMemory(pods, subApp);
+            }
+            if (cmdArgs.status) {
+                evaluateSubApp[EVALUATE_CONTAINER_STATUS] = evaluateContainerStatus(pods, subApp);
             }
             result.push(evaluateSubApp);
         }
