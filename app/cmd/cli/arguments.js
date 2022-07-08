@@ -65,6 +65,11 @@ const cmdArgumentsDefinition = [
     description: 'Display uuApp container status.'
   },
   {
+    name: 'fbpcm',
+    type: Boolean,
+    description: 'Display uuApp fbpcm of all uuApps deployed in the given environment.'
+  },
+  {
     name: 'table',
     alias: 't',
     type: Boolean,
