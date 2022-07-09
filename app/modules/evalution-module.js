@@ -1,12 +1,22 @@
 const {readNodeSizeConfiguration} = require("./configuration-reader-module");
 
 const deepEqual = (x, y) => {
-    return (x && y && typeof x === 'object' && typeof y === 'object') ? 
+    return (x && y && typeof x === 'object' && typeof y === 'object') ?
       (Object.keys(x).length === Object.keys(y).length) && Object.keys(x).reduce((isEqual, key) => {return isEqual && deepEqual(x[key], y[key]);}, true) :
       (x === y);
 };
 
-const subAppSelectorFunction = (pod, subApp) => pod?.metadata?.annotations?.APP_PACK_URL_PATH === subApp;
+/**
+ * Try to find subApp name by APP_PACK_URL_PATH first.
+ * If the app name is not registered under this name, use the name of the first container in the given pod.
+ *
+ * @param pod
+ * @param subApp
+ * @returns {boolean}
+ */
+const subAppSelectorFunction = (pod, subApp) =>
+    pod?.metadata?.annotations?.APP_PACK_URL_PATH === subApp ||
+    pod?.spec?.containers[0]?.name === subApp;
 
 const getSubApp = (pods, subApp) => {
     return pods.find(pod => subAppSelectorFunction(pod, subApp));
@@ -42,8 +52,16 @@ const evaluateNodeSelector = (pods, subApp, subAppConfig) => {
     return result.join(" ");
 };
 
+/**
+ * Return UU_CLOUD_APP_VERSION first in case the attribute exists. Otherwise, return the whole image name.
+ * @param pods
+ * @param subApp
+ * @returns {*|string}
+ */
 const evaluateVersion = (pods, subApp) => {
-    return getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_APP_VERSION;
+    let uuAppVersion = getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_APP_VERSION;
+    let image = getSubApp(pods, subApp)?.spec?.containers[0]?.image;
+    return uuAppVersion ? uuAppVersion : image;
 };
 
 const evaluateRts = (pods, subApp) => {
