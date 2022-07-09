@@ -6,14 +6,17 @@ const deepEqual = (x, y) => {
       (x === y);
 };
 
-const subAppSelectorFunction = (pod, subApp) => pod?.metadata?.annotations?.APP_PACK_URL_PATH === subApp;
-
-const subAppSelectorFunctionFbpcm = (pod, subApp) => {
-    let name = pod?.metadata?.name;
-    let splitName = name.split('-');
-
-    return splitName[0] === subApp
-};
+/**
+ * Try to find subApp name by APP_PACK_URL_PATH first.
+ * If the app name is not registered under this name, use the name of the first container in the given pod.
+ *
+ * @param pod
+ * @param subApp
+ * @returns {boolean}
+ */
+const subAppSelectorFunction = (pod, subApp) =>
+    pod?.metadata?.annotations?.APP_PACK_URL_PATH === subApp ||
+    pod?.spec?.containers[0]?.name === subApp;
 
 const getSubApp = (pods, subApp) => {
     return pods.find(pod => subAppSelectorFunction(pod, subApp));
@@ -21,10 +24,6 @@ const getSubApp = (pods, subApp) => {
 
 const getSubAppCount = (pods, subApp) => {
     return pods.filter(pod => subAppSelectorFunction(pod, subApp)).length;
-};
-
-const getSubAppCountFbpcm = (pods, subApp) => {
-    return pods.filter(pod => subAppSelectorFunctionFbpcm(pod, subApp)).length;
 };
 
 const getSubAppNodeSelectors = (pods, subApp) => {
@@ -53,21 +52,16 @@ const evaluateNodeSelector = (pods, subApp, subAppConfig) => {
     return result.join(" ");
 };
 
+/**
+ * Return UU_CLOUD_APP_VERSION first in case the attribute exists. Otherwise, return the whole image name.
+ * @param pods
+ * @param subApp
+ * @returns {*|string}
+ */
 const evaluateVersion = (pods, subApp) => {
-    return getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_APP_VERSION;
-};
-
-const evaluateVersionFbpcm = (pod, subApp) => {
-    let app = (pod?.spec?.containers[0]?.name !== subApp);
-    let containerTag = null;
-    if (app){
-        let image = pod?.spec?.containers[0]?.image;
-        containerTag = image.split(':');
-        return containerTag[1];
-    }else {
-        return containerTag;
-    }
-
+    let uuAppVersion = getSubApp(pods, subApp)?.metadata?.annotations?.UU_CLOUD_APP_VERSION;
+    let image = getSubApp(pods, subApp)?.spec?.containers[0]?.image;
+    return uuAppVersion ? uuAppVersion : image;
 };
 
 const evaluateRts = (pods, subApp) => {
@@ -108,24 +102,6 @@ const evaluateContainerStatus = (pods, subApp) => {
     return `${status?.phase} [${status?.startTime}] - Restarts: ${containerStatus?.restartCount}`;
 };
 
-const evaluateFbpcm = (pods, subApp, subAppConfig) => {
-    let result = [];
-    let found = getSubAppCountFbpcm(pods, subApp);
-    let versions = 0;
-    pods.forEach(pod => {
-        let versionresult = evaluateVersionFbpcm(pod, subApp);
-        if (versionresult !== null && versionresult === subAppConfig.tag)
-        {
-            versions++
-        }
-    });
-    if(found === 0 || found === subAppConfig.count || versions === subAppConfig.count) {
-        result.push(`Count (Expected/Current): ${subAppConfig.count}/${found}. Valid version (Expected/Current) ${subAppConfig.count}/${versions}`);
-    }
-    return result.join(" ");
-
-};
-
 const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_DEPLOYMENT = "DEPLOYMENT";
     const EVALUATE_KEY_NODE_SELECTOR = "NODE_SELECTOR";
@@ -136,7 +112,6 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_MEMORY = "MEMORY";
     const EVALUATE_KEY_CPU = "CPU";
     const EVALUATE_CONTAINER_STATUS = "CONTAINER_STATUS";
-    const EVALUATE_KEY_FBPCM = "FBPCM";
 
     const result = [];
     Object.keys(environmentConfiguration).forEach(subApp => {
@@ -168,10 +143,6 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
             }
             if (cmdArgs.status) {
                 evaluateSubApp[EVALUATE_CONTAINER_STATUS] = evaluateContainerStatus(pods, subApp);
-            }
-            if (cmdArgs.fbpcm) {
-
-                evaluateSubApp[EVALUATE_KEY_FBPCM] = evaluateFbpcm(pods, subApp, subAppConfig);
             }
             result.push(evaluateSubApp);
         }
