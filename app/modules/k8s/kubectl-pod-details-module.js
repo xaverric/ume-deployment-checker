@@ -1,17 +1,17 @@
-const {callCommand} = require("./cmd-exec-module.js");
-const {readContextConfiguration} = require("./configuration-reader-module");
+const {callCliCommand} = require("../cmd/cmd-exec-module.js");
+const {readContextConfiguration} = require("../configuration/configuration-reader-module");
 
 const getPodsMetadata = async cmdArgs => {
     let contextSettings = readContextConfiguration(cmdArgs);
-    await callCommand(`kubectl config use-context ${contextSettings.context}`);
-    let podDetails = await callCommand(`kubectl get pods -n ${contextSettings.nameSpace} -o jsonpath='{.items[*]}'`);
+    await callCliCommand(`kubectl config use-context ${contextSettings.context}`);
+    let podDetails = await callCliCommand(`kubectl get pods -n ${contextSettings.nameSpace} -o jsonpath='{.items[*]}'`);
     return getArrayFromLineContent(podDetails).map(getPodDetail);
 };
 
 const getPods = async cmdArgs => {
     let contextSettings = readContextConfiguration(cmdArgs);
-    await callCommand(`kubectl config use-context ${contextSettings.context}`);
-    return await callCommand(`kubectl get pods -n ${contextSettings.nameSpace} --sort-by=.metadata.creationTimestamp`);
+    await callCliCommand(`kubectl config use-context ${contextSettings.context}`);
+    return await callCliCommand(`kubectl get pods -n ${contextSettings.nameSpace} --sort-by=.metadata.creationTimestamp`);
 };
 
 const getArrayFromLineContent = (lines) => {

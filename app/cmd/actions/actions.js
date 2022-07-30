@@ -1,10 +1,11 @@
 const { cmdArguments } = require('../cli/arguments');
 const { usage } = require('../cli/usage');
-const { check, help} = require('../../ume-deployment-checker');
+const { check, help, print} = require('../../ume-deployment-checker');
 
 const COMMANDS = {
   COMMAND_HELP: 'help',
-  COMMAND_CHECK: 'check'
+  COMMAND_CHECK: 'check',
+  COMMAND_PRINT: 'print'
 };
 
 const actions = {
@@ -15,6 +16,10 @@ const actions = {
   runCheck: {
     condition: () => handleCondition(cmdArguments.command === COMMANDS.COMMAND_CHECK),
     action: async () => await check(cmdArguments)
+  },
+  runPrint: {
+    condition: () => handleCondition(cmdArguments.command === COMMANDS.COMMAND_PRINT),
+    action: async () => await print(cmdArguments)
   }
 };
 

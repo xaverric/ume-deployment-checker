@@ -1,10 +1,5 @@
-const {CONSOLE_LOG, LOG} = require("./../logger/logger");
-
-const OBJECT_HEADER = "subApp";
-
-const guessKeys = array => {
-    return  array[0] ? Object.keys(array[0]).filter(item => item !== OBJECT_HEADER) : [];
-}
+const {CONSOLE_LOG, LOG} = require("../../logger/logger");
+const {guessKeysWithoutSpecificKeys, guessKeys} = require("./helper/print-helper-module");
 
 const isNotEmpty = value => {
     return !!value;
@@ -20,14 +15,14 @@ const printMessages = (key, messages, logger) => {
 }
 
 const printLineContent = (array, cmdArgs, logger) => {
-    guessKeys(array).forEach(key => {
+    guessKeysWithoutSpecificKeys(array, "subApp").forEach(key => {
         logger.debug(`------- Evaluating ${key} for ${cmdArgs.environment.toUpperCase()} -------`);
         let messages = array.filter(subApp => isNotEmpty(subApp[key]));
         printMessages(key, messages, logger);
     });
 }
 
-const print = (array, cmdArgs) => {
+const printToConsole = (array, cmdArgs) => {
     CONSOLE_LOG.debug(`------------------------------ ${cmdArgs.environment.toUpperCase()} ------------------------------`)
     if (cmdArgs.table) {
         CONSOLE_LOG.debug(`------- Evaluating ${guessKeys(array)} for ${cmdArgs.environment.toUpperCase()} -------`);
@@ -37,5 +32,5 @@ const print = (array, cmdArgs) => {
 }
 
 module.exports = {
-    print
+    printToConsole
 }

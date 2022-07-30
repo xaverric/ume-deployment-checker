@@ -34,8 +34,14 @@ const readNodeSizeConfiguration = cmdArgs => {
     return readJsonFile(filePath);
 }
 
+const readBookkitConfiguration = cmdArgs => {
+    let filePath = path.resolve(`${cmdArgs.config}/bookkit-config.json`);
+    return readJsonFile(filePath);
+}
+
 module.exports = {
     readEnvironmentConfiguration,
     readContextConfiguration,
-    readNodeSizeConfiguration
+    readNodeSizeConfiguration,
+    readBookkitConfiguration
 }

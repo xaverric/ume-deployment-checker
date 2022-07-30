@@ -1,4 +1,4 @@
-const {readNodeSizeConfiguration} = require("./configuration-reader-module");
+const {readNodeSizeConfiguration} = require("./configuration/configuration-reader-module");
 
 const deepEqual = (x, y) => {
     return (x && y && typeof x === 'object' && typeof y === 'object') ?
@@ -36,7 +36,9 @@ const evaluateDeployment = (pods, subApp, subAppConfig) => {
     let found = getSubAppCount(pods, subApp);
 
     if(found === 0 || found !== subAppConfig.count || status !== "Running") {
-        result.push(`Status (Expected/Current): Running/${status}, Count (Expected/Current): ${subAppConfig.count}/${found}.`);
+        result.push(`Status (Expected/Current): Running/${status}, Count (Expected/Current): ${subAppConfig.count}/${found} - NOK`);
+    } else {
+        result.push(`Status: ${status}, Count: ${subAppConfig.count} - OK`);
     }
     return result.join(" ");
 };
@@ -46,7 +48,9 @@ const evaluateNodeSelector = (pods, subApp, subAppConfig) => {
     subAppConfig.nodeSelectors?.forEach(expectedSelector => {
         let foundSelector = getSubAppNodeSelectors(pods, subApp)?.find(podSelector => expectedSelector.key === podSelector.key);
         if (!foundSelector || !deepEqual(expectedSelector, foundSelector)) {
-            result.push(`Node selector ${expectedSelector.key}=${expectedSelector.values[0]} missing.`);
+            result.push(`Node selector ${expectedSelector.key}=${expectedSelector.values[0]} missing - NOK`);
+        } else {
+            result.push(`Node selector ${expectedSelector.key}=${expectedSelector.values[0]} - OK`);
         }
     });
     return result.join(" ");
@@ -81,7 +85,7 @@ const evaluateNodeSize = (pods, subApp, subAppConfig, nodeSizes) => {
     });
     let foundNodeSize = nodeSizes[foundNodeSizeKey];
     if (foundNodeSizeKey !== subAppConfig.nodeSize) {
-        result.push(`NodeSize (Expected/Found): ${subAppConfig.nodeSize}/${foundNodeSizeKey}, CPU (Expected/Current): ${foundNodeSize?.cpu}/${subAppCpu}, RAM: ${foundNodeSize?.memory}/${subAppMemory}`)
+        result.push(`NodeSize (Expected/Found): ${subAppConfig.nodeSize}/${foundNodeSizeKey}, CPU (Expected/Current): ${foundNodeSize?.cpu}/${subAppCpu}, RAM: ${foundNodeSize?.memory}/${subAppMemory} - NOK`)
     } else {
         result.push(`${foundNodeSizeKey} - OK`);
     }
@@ -99,7 +103,7 @@ const evaluateMemory = (pods, subApp) => {
 const evaluateContainerStatus = (pods, subApp) => {
     const status = getSubApp(pods, subApp)?.status;
     const containerStatus = status?.containerStatuses[0];
-    return `${status?.phase} [${status?.startTime}] - Restarts: ${containerStatus?.restartCount}`;
+    return `${status?.phase} [${status?.startTime}] - Restarts: ${containerStatus?.restartCount} - ${containerStatus?.restartCount > 0 ? "NOK" : "OK"}`;
 };
 
 const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {

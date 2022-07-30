@@ -1,15 +1,25 @@
-const { readEnvironmentConfiguration } = require("./modules/configuration-reader-module");
+const { readEnvironmentConfiguration } = require("./modules/configuration/configuration-reader-module");
 const { evaluatePodMetadata } = require("./modules/evalution-module");
-const { getPodsMetadata } = require("./modules/kubectl-pod-details-module");
-const { print } = require("./modules/print-module");
+const { getPodsMetadata } = require("./modules/k8s/kubectl-pod-details-module");
+const { printToConsole } = require("./modules/print/console-print-module");
+const { printToBookkit } = require("./modules/print/bookkit-print-module");
 const {CONSOLE_LOG} = require("./logger/logger");
 
 const check = async cmdArgs => {
     let environmentConfiguration = readEnvironmentConfiguration(cmdArgs);
     let pods = await getPodsMetadata(cmdArgs);
     let evaluationResult = evaluatePodMetadata(pods, environmentConfiguration, cmdArgs);
-    
-    print(evaluationResult, cmdArgs);
+
+    printToConsole(evaluationResult, cmdArgs);
+}
+
+const print = async cmdArgs => {
+    let environmentConfiguration = readEnvironmentConfiguration(cmdArgs);
+    let pods = await getPodsMetadata(cmdArgs);
+    let evaluationResult = evaluatePodMetadata(pods, environmentConfiguration, cmdArgs);
+
+    await printToBookkit(evaluationResult, cmdArgs);
+    CONSOLE_LOG.debug(`${cmdArgs.environment.toUpperCase()} environment details stored into the bookkit page.`);
 }
 
 const help = usage => {
@@ -18,5 +28,6 @@ const help = usage => {
 
 module.exports = {
     check,
+    print,
     help
 }

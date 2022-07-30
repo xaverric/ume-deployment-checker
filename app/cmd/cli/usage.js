@@ -14,7 +14,8 @@ const usageDefinition = [
     header: 'Commands',
     content: [
       { name: 'help', summary: 'Display this help.' },
-      { name: 'check', summary: 'Performs checks based on given parameters and configuration.' }
+      { name: 'check', summary: 'Performs checks based on given parameters and configuration.' },
+      { name: 'print', summary: 'Performs print based on given parameters and configuration. Result is printed into the defined bookkit page.' }
     ]
   },
   {
