@@ -55,6 +55,9 @@ Display container uuApp status.
 ### -t, --table               
 Diplay the ouput in the table form.
 
+### --problemReport
+Flag applicable for the print task only. Task prints problems only to the specific bookkit page.
+
 ## Configuration
 
 ### [env].json, i.e. env1.json
@@ -128,6 +131,11 @@ Diplay the ouput in the table form.
         "MEMORY": "...",
         "CPU": "...",
         "CONTAINER_STATUS": "..."
+      },
+      // page for reporting the problems only - with this configuration you can have all problems from all environments in one place
+      "problemReport": {
+        "page": "...",
+        "section": "..."
       }
     },
     ...

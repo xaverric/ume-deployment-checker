@@ -1,6 +1,6 @@
 {
   "name": "ume-deployment-checker",
-  "version": "1.3.0",
+  "version": "1.4.1",
   "description": "An amazing command line tool allowing you to verify your k8s deployments.",
   "scripts": {},
   "author": "Daniel Jílek",

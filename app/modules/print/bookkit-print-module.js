@@ -1,28 +1,14 @@
 const {readBookkitConfiguration} = require("../configuration/configuration-reader-module");
 const login = require("../client/authorize-module");
-const {callCommand} = require("../client/calls");
 const {guessKeysWithSpecificKeys, guessKeysWithoutSpecificKeys} = require("./helper/print-helper-module");
+const {updateSection} = require("./helper/bookkit-helper-module");
 
-const generateUu5String = (messages, header) => {
-    let columns = guessKeysWithSpecificKeys(messages, "subApp", header).map(col => {return {header: col}});
-    let errorColorSchema = {
-        colorSchema: "red",
-        bgStyle: "filled"
-    };
-    let rows = messages
-        // make sure only values for defined header will be filled
-        .map(message => {
-            return {
-                subApp: message.subApp,
-                [header]: message[header]
-            }
-        })
-        .map(item => {
-            return {
-                value: Object.values(item),
-                style: item[header].includes("NOK") ? errorColorSchema : {}
-            }
-        });
+const ERROR_COLOR_SCHEME = {
+    colorSchema: "red",
+    bgStyle: "filled"
+};
+
+const uu5StringTemplate = (rows, columns, header) => {
     return `<uu5string/>
         <UU5.Bricks.Lsi>
             <UU5.Bricks.Lsi.Item language="en">
@@ -39,6 +25,36 @@ const generateUu5String = (messages, header) => {
         </UU5.Bricks.Lsi>`;
 }
 
+const generateUu5StringForKey = (messages, header) => {
+    let columns = guessKeysWithSpecificKeys(messages, "subApp", header).map(col => {
+        return {header: col}
+    });
+    let rows = messages
+        // make sure only values for defined header will be filled
+        .map(message => {
+            return {subApp: message.subApp, [header]: message[header]}
+        })
+        .map(item => {
+            return {
+                value: Object.values(item),
+                style: item[header].includes("NOK") ? ERROR_COLOR_SCHEME : {}
+            }
+        });
+    return uu5StringTemplate(rows, columns, header);
+}
+
+const generateUu5StringProblemReport = (messages, header) => {
+    let problems = messages.flatMap(item => Object.values(item)).filter(item => item.includes("NOK"));
+    let columns = [{header: "Problem"}];
+    let rows = problems.map(item => {
+        return {
+            value: [item],
+            style: ERROR_COLOR_SCHEME
+        }
+    });
+    return uu5StringTemplate(rows, columns, header);
+}
+
 const printToBookkit = async (evaluationResult, cmdArgs) => {
     let bookkitConfig = readBookkitConfiguration(cmdArgs);
     let token = await login(bookkitConfig.oidcHost, bookkitConfig.accessCode1, bookkitConfig.accessCode2);
@@ -46,15 +62,12 @@ const printToBookkit = async (evaluationResult, cmdArgs) => {
 
     for (const key of guessKeysWithoutSpecificKeys(evaluationResult, "subApp")) {
         if (envBookkitConfig.sections[key]) {
-            let lock = await callCommand(`${bookkitConfig.uri}/lockPageSection`, "POST", {code: envBookkitConfig.sections[key], page: envBookkitConfig.page}, token);
-            await callCommand(`${bookkitConfig.uri}/updatePageSection`, "POST", {
-                code: envBookkitConfig.sections[key],
-                page: envBookkitConfig.page,
-                content: generateUu5String(evaluationResult, key),
-                sys: {rev: lock.sys.rev}
-            }, token);
-            await callCommand(`${bookkitConfig.uri}/unlockPageSection`, "POST", {code: envBookkitConfig.sections[key], page: envBookkitConfig.page}, token);
+            await updateSection(bookkitConfig.uri, envBookkitConfig.page, envBookkitConfig.sections[key], generateUu5StringForKey(evaluationResult, key), token);
         }
+    }
+
+    if (envBookkitConfig.problemReport && cmdArgs.problemReport) {
+        await updateSection(bookkitConfig.uri, envBookkitConfig.problemReport.page, envBookkitConfig.problemReport.section, generateUu5StringProblemReport(evaluationResult, cmdArgs.environment), token);
     }
 }
 
