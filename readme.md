@@ -102,11 +102,20 @@ Flag applicable for the print task only. Task prints problems only to the specif
 ### nodesizes.json
 ```json
 {
-    "NODESIZE_NAME": {
-        "cpu": "1",
-        "memory": "512Mi"
-    },
-    ...
+  "NODESIZE_NAME": {
+    "cpu": "1",
+    "memory": "512Mi"
+  },
+  ...
+}
+
+// Another option is to define array of values. This might get handy if different representations are used for the same value.
+{
+  "NODESIZE_NAME": {
+    "cpu": ["1", "1000m"],
+    "memory": ["512Mi", "512"]
+  },
+  ...
 }
 ```
 

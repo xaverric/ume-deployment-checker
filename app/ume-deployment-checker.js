@@ -1,7 +1,7 @@
 const { readEnvironmentConfiguration } = require("./modules/configuration/configuration-reader-module");
 const { evaluatePodMetadata } = require("./modules/evalution-module");
 const { getPodsMetadata } = require("./modules/k8s/kubectl-pod-details-module");
-const { printToConsole } = require("./modules/print/console-print-module");
+const { printToConsole, printNoVerboseStatus, printVerbose} = require("./modules/print/console-print-module");
 const { printToBookkit } = require("./modules/print/bookkit-print-module");
 const {CONSOLE_LOG} = require("./logger/logger");
 
@@ -10,7 +10,11 @@ const check = async cmdArgs => {
     let pods = await getPodsMetadata(cmdArgs);
     let evaluationResult = evaluatePodMetadata(pods, environmentConfiguration, cmdArgs);
 
-    printToConsole(evaluationResult, cmdArgs);
+    if(cmdArgs.noverbose) {
+        printNoVerboseStatus(evaluationResult, cmdArgs)
+    } else {
+        printVerbose(evaluationResult, cmdArgs);
+    }
 }
 
 const print = async cmdArgs => {

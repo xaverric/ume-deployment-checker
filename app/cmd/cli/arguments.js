@@ -74,6 +74,11 @@ const cmdArgumentsDefinition = [
     name: 'problemReport',
     type: Boolean,
     description: 'Flag applicable for the print task only. Task prints problems only to the specific bookkit page.'
+  },
+  {
+    name: 'noverbose',
+    type: Boolean,
+    description: 'Flag applicable for the check task only. Display overall status for performed checks.'
   }
 ];
 

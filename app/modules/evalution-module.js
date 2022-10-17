@@ -80,9 +80,10 @@ const evaluateNodeSize = (pods, subApp, subAppConfig, nodeSizes) => {
     let result = [];
     let subAppCpu = evaluateCpu(pods, subApp);
     let subAppMemory = evaluateMemory(pods, subApp);
-    let foundNodeSizeKey = Object.keys(nodeSizes).find(nodeSizeName => {
-        return nodeSizes[nodeSizeName]?.cpu === subAppCpu && nodeSizes[nodeSizeName]?.memory === subAppMemory
-    });
+    let foundNodeSizeKey = Object.keys(nodeSizes).find(nodeSizeName =>
+        isNodeSizeValueEqual(nodeSizes[nodeSizeName], "memory", subAppMemory) &&
+        isNodeSizeValueEqual(nodeSizes[nodeSizeName], "cpu", subAppCpu)
+    );
     let foundNodeSize = nodeSizes[foundNodeSizeKey];
     if (foundNodeSizeKey !== subAppConfig.nodeSize) {
         result.push(`NodeSize (Expected/Found): ${subAppConfig.nodeSize}/${foundNodeSizeKey}, CPU (Expected/Current): ${foundNodeSize?.cpu}/${subAppCpu}, RAM: ${foundNodeSize?.memory}/${subAppMemory} - NOK`)
@@ -91,6 +92,13 @@ const evaluateNodeSize = (pods, subApp, subAppConfig, nodeSizes) => {
     }
     return result.join(" ");
 };
+
+const isNodeSizeValueEqual = (nodesize, valueName, currentSubAppValue) => {
+    if (Array.isArray(nodesize?.[valueName])) {
+        return nodesize?.[valueName].some(value => value === currentSubAppValue)
+    }
+    return nodesize?.[valueName] === currentSubAppValue;
+}
 
 const evaluateCpu = (pods, subApp) => {
     return getSubApp(pods, subApp)?.spec?.containers[0]?.resources?.requests?.cpu;

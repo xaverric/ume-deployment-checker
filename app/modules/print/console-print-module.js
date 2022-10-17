@@ -22,7 +22,7 @@ const printLineContent = (array, cmdArgs, logger) => {
     });
 }
 
-const printToConsole = (array, cmdArgs) => {
+const printVerbose = (array, cmdArgs) => {
     CONSOLE_LOG.debug(`------------------------------ ${cmdArgs.environment.toUpperCase()} ------------------------------`)
     if (cmdArgs.table) {
         CONSOLE_LOG.debug(`------- Evaluating ${guessKeys(array)} for ${cmdArgs.environment.toUpperCase()} -------`);
@@ -31,6 +31,19 @@ const printToConsole = (array, cmdArgs) => {
     printLineContent(array, cmdArgs, cmdArgs.table ? LOG : CONSOLE_LOG);
 }
 
+const printNoVerboseStatus = (array, cmdArgs) => {
+    CONSOLE_LOG.debug(`------------------------------ ${cmdArgs.environment.toUpperCase()} ------------------------------`)
+    let result = guessKeysWithoutSpecificKeys(array, "subApp").map(key => {
+        let problems = array.map(item => item[key]).filter(item => item.includes("NOK")).length;
+        return {
+            CHECK_TYPE: key,
+            RESULT: problems > 0 ? `NOK - ${problems} problems` : "OK"
+        }
+    });
+    console.table(result);
+}
+
 module.exports = {
-    printToConsole
+    printVerbose,
+    printNoVerboseStatus
 }
