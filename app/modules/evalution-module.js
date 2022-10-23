@@ -114,6 +114,20 @@ const evaluateContainerStatus = (pods, subApp) => {
     return `${status?.phase} [${status?.startTime}] - Restarts: ${containerStatus?.restartCount} - ${containerStatus?.restartCount > 0 ? "NOK" : "OK"}`;
 };
 
+const evaluateVolume = (pods, subApp, subAppConfig) => {
+    const result = [];
+    subAppConfig.volumes?.forEach(expectedVolume => {
+        let volumeMount = getSubApp(pods, subApp)?.spec?.containers[0]?.volumeMounts.find(volumeMount => volumeMount.name === expectedVolume.name && volumeMount.mountPath === expectedVolume.mountPath);
+        let foundVolume = getSubApp(pods, subApp)?.spec?.volumes?.find(volume => volume.name === expectedVolume.name);
+        if (!foundVolume || !volumeMount) {
+            result.push(`Volume ${expectedVolume.name}:${expectedVolume.mountPath} missing - NOK`);
+        } else {
+            result.push(`Volume ${expectedVolume.name}:${expectedVolume.mountPath} - OK`);
+        }
+    });
+    return result.join(" ");
+};
+
 const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_DEPLOYMENT = "DEPLOYMENT";
     const EVALUATE_KEY_NODE_SELECTOR = "NODE_SELECTOR";
@@ -124,6 +138,7 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     const EVALUATE_KEY_MEMORY = "MEMORY";
     const EVALUATE_KEY_CPU = "CPU";
     const EVALUATE_CONTAINER_STATUS = "CONTAINER_STATUS";
+    const EVALUATE_KEY_VOLUME = "VOLUME";
 
     const result = [];
     Object.keys(environmentConfiguration).forEach(subApp => {
@@ -155,6 +170,9 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
             }
             if (cmdArgs.status) {
                 evaluateSubApp[EVALUATE_CONTAINER_STATUS] = evaluateContainerStatus(pods, subApp);
+            }
+            if (cmdArgs.volume) {
+                evaluateSubApp[EVALUATE_KEY_VOLUME] = evaluateVolume(pods, subApp, subAppConfig);
             }
             result.push(evaluateSubApp);
         }

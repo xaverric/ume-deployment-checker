@@ -65,6 +65,11 @@ const cmdArgumentsDefinition = [
     description: 'Display uuApp container status.'
   },
   {
+    name: 'volume',
+    type: Boolean,
+    description: 'Display and verify uuApp volume mount.'
+  },
+  {
     name: 'table',
     alias: 't',
     type: Boolean,

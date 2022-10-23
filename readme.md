@@ -52,6 +52,9 @@ Display uuApp CPU of all uuApps deployed in the given environment.
 ### --status
 Display container uuApp status.
 
+### --volume
+Display and verify uuApp volume mount.
+
 ### -t, --table               
 Diplay the ouput in the table form.
 
@@ -61,7 +64,7 @@ Flag applicable for the print task only. Task prints problems only to the specif
 ## Configuration
 
 ### [env].json, i.e. env1.json
-```json
+```
 {
   "uu-app-name": {
     "required": true, // identify whether should be checked by the tool at all
@@ -88,7 +91,7 @@ Flag applicable for the print task only. Task prints problems only to the specif
 ```
 
 ### contexts.json
-```json
+```
 [
   {
     "environment": "env1", // environment name, with same name the env1.json file must exist in the same folder
@@ -100,7 +103,7 @@ Flag applicable for the print task only. Task prints problems only to the specif
 ```
 
 ### nodesizes.json
-```json
+```
 {
   "NODESIZE_NAME": {
     "cpu": "1",
@@ -120,7 +123,7 @@ Flag applicable for the print task only. Task prints problems only to the specif
 ```
 
 ### bookkit-config.json
-```json
+```
 {
   "accessCode1": "...", // login credentials to bookkit (user must have privileges to mannipulate with the book content)
   "accessCode2": "...", // login credentials to bookkit (user must have privileges to mannipulate with the book content)
