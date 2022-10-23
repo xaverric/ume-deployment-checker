@@ -44,11 +44,18 @@ const generateUu5StringForKey = (messages, header) => {
 }
 
 const generateUu5StringProblemReport = (messages, header) => {
-    let problems = messages.flatMap(item => Object.values(item)).filter(item => item.includes("NOK"));
-    let columns = [{header: "Problem"}];
+    let problems = messages
+        .map(item => {
+            return {
+                subApp: item.subApp,
+                problems: Object.values(item).filter(item => item.includes("NOK")).join(" - ")
+            }
+        }).
+        filter(item => !!item.problems);
+    let columns = [{header: "subApp"}, {header: "Problem"}];
     let rows = problems.map(item => {
         return {
-            value: [item],
+            value: Object.values(item),
             style: ERROR_COLOR_SCHEME
         }
     });
