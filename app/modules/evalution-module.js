@@ -180,6 +180,13 @@ const evaluatePodMetadata = (pods, environmentConfiguration, cmdArgs) => {
     return result;
 }
 
+const evaluateExtraPods = (pods, environmentConfiguration) => {
+    return pods
+        .filter(pod => !Object.keys(environmentConfiguration).some(subApp => subAppSelectorFunction(pod, subApp)))
+        .map(pod => pod?.metadata?.annotations?.APP_PACK_URL_PATH)
+}
+
 module.exports = {
-    evaluatePodMetadata
+    evaluatePodMetadata,
+    evaluateExtraPods
 };
